@@ -34,7 +34,7 @@ Here, you will find my course projects, research, and independent work.
 _Link coming soon_
 
 # **Course Projects:**
--Link coming soon_
+[Machine Learning Analysis of World Happiness Data](R/302Project.html)
 
 # **Research:**
 _Link coming soon_
