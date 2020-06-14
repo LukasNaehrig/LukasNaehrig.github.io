@@ -1,0 +1,203 @@
+---
+title: "World Happiness Score Machine Learning Analysis"
+author: "Lukas Naehrig"
+date: "6/10/2020"
+output: html_document
+---
+``` {r setup}
+# setwd("C:/Users/lnaeh/Desktop/302 Project")
+library(tidyverse)
+library(plotly)
+```
+Introduction:
+The dataset we analyzed originated from the World Happiness Report in 2018. Happiness scores for each country is calculated based on a subset of factors including life expectancy, GDP per capita, social support, etc. We chose to analyze specific trends in this dataset by creating scatter and time series plots, linear models, and the implementation of ANOVA. Our goal is to identify trends in certain factors and understand the influences of happiness scores.
+
+Data Frame Setup:
+``` {r happy}
+happyScore <- read_csv('happyScore.csv')
+happyCategories <- read_csv('happyCategories.csv')
+happyCategories <-
+  happyCategories %>%
+  rename('Country' = 'Country name',
+         'Log_GDP_per_Capita' = 'Log GDP per capita',
+         'Life_Expectancy' = 'Healthy life expectancy at birth',
+         'Freedom' = 'Freedom to make life choices',
+         'Social_Support' = 'Social support',
+         'Trust' = 'Confidence in national government')
+happyScore <-
+  happyScore %>%
+  rename('Happiness_Score' = 'Happiness score')
+happyScore <-
+  happyScore %>%
+  select(Country, Happiness_Score, Region)
+
+happyCategories2018 <- 
+  happyCategories %>%
+  filter(Year == 2018)
+
+happy <- inner_join(happyScore, happyCategories2018, by = 'Country')
+head(happy, 10)
+tail(happy, 10)
+```
+
+## Intro questions: 
+### 1: What does the distribution of certain factors versus Happiness Score look like?
+### 2: Is there an identifiable trend in certain factors from 2006 - 2018 in regions of developing countries?
+``` {r visual}
+# Scatter plots:
+
+noNAHappy <-
+  happy %>%
+  drop_na(Life_Expectancy)
+p1 <- ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Life_Expectancy, y = Happiness_Score, color = Region)) +
+  ggtitle('Life Expectancy vs. Happiness Score in 2018')
+ggplotly(p1)
+
+noNAHappy <- 
+  noNAHappy %>%
+  drop_na(Log_GDP_per_Capita)
+p2 <- ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Log_GDP_per_Capita, y = Happiness_Score, color = Region)) +
+  ggtitle('GDP per Capita vs. Happiness Score in 2018')
+ggplotly(p2)
+
+noNAHappy <-
+  noNAHappy %>%
+  drop_na(Social_Support)
+p3 <- ggplot() + 
+  geom_point(data = noNAHappy, aes(x = Social_Support, y = Happiness_Score, color = Region))  +
+  ggtitle('Social Support vs. Happiness Score in 2018')
+ggplotly(p3)
+
+
+# Next: Time series graph
+tempTime <- inner_join(happyScore, happyCategories, by = 'Country')
+happyTime1 <-
+  tempTime %>%
+  filter(Region == 'Sub-Saharan Africa') %>%
+  drop_na(Life_Expectancy, Log_GDP_per_Capita, Social_Support)
+  
+p4 <- ggplot(happyTime1, aes(y = Life_Expectancy, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Life Expectancy from 2006-2019')
+ggplotly(p4)
+p5 <- ggplot(happyTime1, aes(y = Log_GDP_per_Capita, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Log(GDP per Capita) from 2006-2019')
+ggplotly(p5)
+p6 <- ggplot(happyTime1, aes(y = Social_Support, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Social Support from 2006-2019')
+ggplotly(p6)
+
+happyTime2 <-
+  tempTime %>%
+  filter(Region %in% c('Middle East', 'North Africa')) %>%
+  drop_na(Life_Expectancy, Log_GDP_per_Capita, Social_Support)
+  
+p7 <- ggplot(happyTime2, aes(y = Life_Expectancy, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Life Expectancy from 2006-2019')
+ggplotly(p7)
+p8 <- ggplot(happyTime2, aes(y = Log_GDP_per_Capita, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Log(GDP per Capita) from 2006-2019')
+ggplotly(p8)
+p9 <- ggplot(happyTime2, aes(y = Social_Support, x = Year, color = Country)) +
+  geom_line() +
+  ggtitle('Social Support from 2006-2019')
+ggplotly(p9)
+```
+Summary: Evidently, the life expectancy time series in both Sub-Saharan Africa and the Middle East is displaying an increasing trend, whereas the GDP per Capita seems to be stagnant. On the other hand, social support in both regions seem to be flunctuating greatly, most likely due to the stability problems many countries are experiencing due to famine and civil wars. 
+
+
+## Scientific Question 1: How do covariates life expectancy, GDP per capita, and social support independently affect the happiness score in 2018?
+We regressed the happiness scores in 2018 with three covariates in our linear models: life expectancy, GDP per capita, and social support. Our goal was to see how each covariate independently affects the happiness score. This model can predict the happiness score of a country given an estimated value for each covariate.
+There are four assumptions we have to make which include linearity, a normal error distribution, equal variance, and independence of observations. 
+``` {r 2}
+happinessModel <- lm(Happiness_Score ~ Life_Expectancy + Log_GDP_per_Capita + Social_Support, data = happy)
+happinessModel
+summary(happinessModel)
+#plot(happinessModel)
+```
+Section 1 Summary: Based on the residuals vs. fitted plot, we see that there is not a perfect linear relationship, which could have an effect on the model's predictive accuracy. Looking at the Normal Q-Q plot, we can see that the residuals are approximately normally distributed. The scale-location plot highlights that we do have homogeneity of variance. Finally, the residuals vs. leverage plot shows a roughly horizontal line, with two slight outliers, which seem to be reasonable.
+The following table displays the coefficients of our covariates:
+Life_Expectancy     0.03922
+Log_GDP_per_Capita  0.34462
+Social_Support      2.63163
+Since the p-values of all three factors were 0.02 or less, we can assume that the coefficients are statistically significant and not due to randomness.
+Therefore, an increase in life expectancy of 1 year is associated with a happiness score increase of 0.03992. An increase in the log(GDP per capita) of 1 unit is associated with a happiness value increase of 0.34462. Finally, an increase in 1% of social support is associated with a happiness score increase of 2.63163.
+
+
+## Scientific Question 2: Are life expectancy, GDP per capita, and social support similar for people living in the same general region, or do these factors significantly depend on national affiliation?
+## Hypothesis: Adding 'Country' as a covariate in a linear model reduces the residual sum of squares compared to just 'Region' as a covariate in an ANOVA model.
+We considered two regions in our ANOVA analysis: Europe and the Americas. We wanted to know if adding 'country' as a covariate in a linear model explaining several outcomes reduces the residual sum of squares compared to a model with just 'region' as a covariate. The outcomes we analyzed were life expectancy, GDP per capita, and social support from 2006 to 2018.
+When implementing an ANOVA model, we have to make several assumptions including no outliers, a normal distribution, and homogeneity of variance. Looking at the residuals vs. leverage plots, QQ plots, and scale-location plots for each model, we can determine if those assumptions hold in our analysis. None of the residuals vs leverage plots show significant leverage, meaning there are no outliers in our data for the countries in Europe and the Americas. 
+``` {r anova}
+# Note: certain diagnostic plots are commented out for the sake of runtime and space. Please uncomment them if you want to take a look.
+
+# Europe:
+
+tempDF <- inner_join(happyScore, happyCategories, by = 'Country')
+tempEurope <-
+  tempDF %>%
+  filter(Region %in% c('Scandinavia', 'Western Europe', 'Central and Eastern Europe'))
+aEurope <- lm(Life_Expectancy ~ Region, data = tempEurope)
+bEurope <- lm(Life_Expectancy ~ Region + Country, data = tempEurope)
+anova(aEurope, bEurope)
+
+#plot(aEurope)
+#plot(bEurope)
+#coef(aEurope)
+
+cEurope <- lm(Log_GDP_per_Capita ~ Region, data = tempEurope)
+dEurope <- lm(Log_GDP_per_Capita ~ Region + Country, data = tempEurope)
+anova(cEurope, dEurope)
+
+#plot(cEurope)
+#plot(dEurope)
+#coef(dEurope)
+
+eEurope <- lm(Social_Support ~ Region, data = tempEurope)
+fEurope <- lm(Social_Support ~ Region + Country, data = tempEurope)
+anova(eEurope, fEurope)
+
+#plot(eEurope)
+#plot(fEurope)
+#coef(fEurope)
+
+# Americas:
+
+tempAmericas <-
+  tempDF %>%
+  filter(Region %in% c('North America', 'Latin America'))
+aAmericas <- lm(Life_Expectancy ~ Region, data = tempAmericas)
+bAmericas <- lm(Life_Expectancy ~ Region + Country, data = tempAmericas)
+anova(aAmericas, bAmericas)
+
+#plot(aAmericas)
+#plot(bAmericas)
+#coef(bAmericas)
+
+cAmericas <- lm(Log_GDP_per_Capita ~ Region, data = tempAmericas)
+dAmericas <- lm(Log_GDP_per_Capita ~ Region + Country, data = tempAmericas)
+anova(cAmericas, dAmericas)
+
+#plot(cAmericas)
+#plot(dAmericas)
+#coef(dAmericas)
+
+eAmericas <- lm(Social_Support ~ Region, data = tempAmericas)
+fAmericas <- lm(Social_Support ~ Region + Country, data = tempAmericas)
+anova(eAmericas, fAmericas)
+
+#plot(eAmericas)
+#plot(fAmericas)
+#coef(fAmericas)
+```
+Section 2 summary:
+The Normal Q-Q plots seem to be slightly skewed at the two ends, meaning that despite statistical significance holding, we need to be careful with our conclusion as the data is not normally distributed. The data in the residuals vs. fitted plots seem to be slightly off the horizontal. It is important to note that the data in the prognostic plots seem to be grouped, and therefore the variance of the comparison groups may not be reasonable, and thus causing a decrease in the models' predictive powers.
+For the ANOVA models analyzing life expectancy and GDP per capita, the residual sum of squares decreased significantly in Europe as well as the Americas. Evidently, the differences in life expectancy and GDP per capita is explained by country affiliation/nationality. For these 4 models, the p-value was negligible, so the reduction in residual sum of squares is not due to randomness.
+For the ANOVA models analyzing social support, the residual sum of squares fell for the models including 'country' as a covariate, but not on the same magnitude as with the other two factors. The residual sum of squares was already extremely small, which implies that social support tends to be a strong indication of region. We still observed a statistically significant derease in the residual sum of squares; however, social support seems to be similar for governments in the same region.
+Note that data collection was missing for many nations in geographical regions such as Sub-Saharan Africa, Asia, and the Middle East. Therefore, the interpretation of an ANOVA model was only possible in Europe and the Americas, where missing data was not an issue.
