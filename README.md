@@ -23,13 +23,18 @@ Here, you will find my course projects, research, and independent work.
 - Excel
 
 ## Education:
-- Tesla STEM High School, University of Washington
+- Tesla STEM High School, 2014-2018
+- University of Washington, 2018-2022
+
+## Research / Work:
 - Climate Model Research (Atmospheric Sciences, UW, Mentor: Dargan Frierson)
 - NOAA Fisheries Internship, Varanasi Fellow 2020
 
 ## My full resume:
-
+_Link coming soon_
 
 # **Course Projects:**
+-Link coming soon_
 
 # **Research:**
+_Link coming soon_
