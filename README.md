@@ -1,5 +1,7 @@
 # LukasNaehrig.github.io
 
+![Lukas](lukas1.png)
+
 ## This is my academic website.
 Here, you will find my course projects, research, and independent work.
 
