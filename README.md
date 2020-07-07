@@ -31,7 +31,7 @@ Here, you will find my course projects, research, and independent work.
 - NOAA Fisheries Internship, Varanasi Fellow 2020
 
 ## My full resume:
-[Lukas' Resume](master/Resume_LNaehrig.docx)
+[Lukas' Resume](https://github.com/LukasNaehrig/LukasNaehrig.github.io/blob/master/Resume_LNaehrig.docx)
 
 # **Course Projects:**
 [Machine Learning Analysis of World Happiness Data](R)
