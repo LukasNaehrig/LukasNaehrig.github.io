@@ -1,7 +1,5 @@
 # LukasNaehrig.github.io
 
-![Lukas](lukas1.png)
-
 ## This is my academic website.
 Here, you will find my course projects, research, and independent work.
 
@@ -33,7 +31,7 @@ Here, you will find my course projects, research, and independent work.
 - NOAA Fisheries Internship, Varanasi Fellow 2020
 
 ## My full resume:
-_Link coming soon_
+[Lukas' Resume](docs/Resume_LNaehrig.docx)
 
 # **Course Projects:**
 [Machine Learning Analysis of World Happiness Data](R)
